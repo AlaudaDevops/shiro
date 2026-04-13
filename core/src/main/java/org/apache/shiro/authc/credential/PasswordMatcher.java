@@ -20,6 +20,7 @@ package org.apache.shiro.authc.credential;
 
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.crypto.hash.Hash;
 
 /**
@@ -55,6 +56,11 @@ public class PasswordMatcher implements CredentialsMatcher {
         //otherwise they are a String (asserted in the 'assertStoredCredentialsType' method call above):
         String formatted = (String)storedCredentials;
         return passwordService.passwordsMatch(submittedPassword, formatted);
+    }
+
+    @Override
+    public AuthenticationInfo createSimulatedCredentials() {
+        return SimpleCredentialsMatcher.makeSimulatedAuthenticationInfo(ensurePasswordService());
     }
 
     private HashingPasswordService assertHashingPasswordService(PasswordService service) {

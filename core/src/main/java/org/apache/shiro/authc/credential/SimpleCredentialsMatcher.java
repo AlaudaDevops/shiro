@@ -20,11 +20,14 @@ package org.apache.shiro.authc.credential;
 
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.SimpleAuthenticationInfo;
+import org.apache.shiro.codec.Base64;
 import org.apache.shiro.codec.CodecSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.util.Arrays;
 
 
@@ -42,6 +45,8 @@ import java.util.Arrays;
 public class SimpleCredentialsMatcher extends CodecSupport implements CredentialsMatcher {
 
     private static final Logger log = LoggerFactory.getLogger(SimpleCredentialsMatcher.class);
+    /** Default number of bytes for a simulated password. */
+    private static final int DEFAULT_PASSWORD_BYTES = 18;
 
     /**
      * Returns the {@code token}'s credentials.
@@ -129,4 +134,30 @@ public class SimpleCredentialsMatcher extends CodecSupport implements Credential
         return equals(tokenCredentials, accountCredentials);
     }
 
+    @Override
+    public AuthenticationInfo createSimulatedCredentials() {
+        return makeSimulatedAuthenticationInfo(null);
+    }
+
+    /**
+     * Default implementation which creates a simulated AuthenticationInfo with a random password.
+     * NOTE: the returned AuthenticationInfo must never validate successfully.
+     * @param passwordService optional PasswordService used to encrypt the simulated password, may be null.
+     * @return simulated AuthenticationInfo, created for non-existent users.
+     */
+    static AuthenticationInfo makeSimulatedAuthenticationInfo(PasswordService passwordService) {
+        final SecureRandom random = new SecureRandom();
+        final byte[] bytes = new byte[DEFAULT_PASSWORD_BYTES];
+        random.nextBytes(bytes);
+        final String encoded = Base64.encodeToString(bytes);
+
+        Object parsedPassword;
+        if (passwordService == null) {
+            parsedPassword = encoded;
+        } else {
+            parsedPassword = passwordService.encryptPassword(encoded);
+        }
+
+        return new SimpleAuthenticationInfo("__principal__", parsedPassword, "");
+    }
 }

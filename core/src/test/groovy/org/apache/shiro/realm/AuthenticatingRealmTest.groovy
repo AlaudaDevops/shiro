@@ -142,6 +142,9 @@ class AuthenticatingRealmTest {
         def token = createStrictMock(AuthenticationToken)
         def info = createStrictMock(AuthenticationInfo)
 
+        // simulateFailedLogin will call token.getCredentials() for the timing-safe comparison
+        expect(token.getCredentials()).andReturn("dummy").anyTimes()
+
         replay token, info
 
         AuthenticatingRealm realm = new TestAuthenticatingRealm()
