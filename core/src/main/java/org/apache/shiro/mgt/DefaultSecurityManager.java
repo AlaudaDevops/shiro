@@ -285,6 +285,11 @@ public class DefaultSecurityManager extends SessionsSecurityManager {
             throw ae; //propagate
         }
 
+        Session existingSession = subject.getSession(false);
+        if (existingSession != null) {
+            existingSession.stop();
+        }
+
         Subject loggedIn = createSubject(token, info, subject);
 
         onSuccessfulLogin(token, info, loggedIn);
