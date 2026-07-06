@@ -56,6 +56,9 @@ public class DefaultWebSessionManager extends DefaultSessionManager implements W
     public DefaultWebSessionManager() {
         Cookie cookie = new SimpleCookie(ShiroHttpSession.DEFAULT_SESSION_ID_NAME);
         cookie.setHttpOnly(true); //more secure, protects against XSS attacks
+        if (!Boolean.getBoolean(SECURE_COOKIE_DISABLED)) {
+            cookie.setSecure(true);
+        }
         this.sessionIdCookie = cookie;
         this.sessionIdCookieEnabled = true;
         this.sessionIdUrlRewritingEnabled = false;

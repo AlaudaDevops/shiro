@@ -1,0 +1,48 @@
+# Builds shiro-core and shiro-web jars and attaches them to a GitHub release
+# on push of a v*-alauda tag.
+name: Release Alauda-fork jars
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags:
+      - 'v*-alauda'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: 8
+          distribution: temurin
+
+      - name: Build shiro-core and shiro-web (skip tests, skip rat)
+        run: |
+          mvn -B -ntp -pl core,web -am \
+            -DskipTests -Drat.skip=true \
+            -Dinvoker.skip=true \
+            package
+
+      - name: Collect release artifacts
+        id: collect
+        run: |
+          mkdir -p release-artifacts
+          cp core/target/shiro-core-*.jar release-artifacts/
+          cp web/target/shiro-web-*.jar release-artifacts/
+          ls -l release-artifacts/
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-artifacts/*.jar
+          generate_release_notes: true
+          fail_on_unmatched_files: true

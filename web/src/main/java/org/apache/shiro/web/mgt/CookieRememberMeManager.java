@@ -35,6 +35,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import static org.apache.shiro.session.mgt.DefaultSessionManager.SECURE_COOKIE_DISABLED;
+
 
 /**
  * Remembers a Subject's identity by saving the Subject's {@link Subject#getPrincipals() principals} to a {@link Cookie}
@@ -87,6 +89,9 @@ public class CookieRememberMeManager extends AbstractRememberMeManager {
     public CookieRememberMeManager() {
         Cookie cookie = new SimpleCookie(DEFAULT_REMEMBER_ME_COOKIE_NAME);
         cookie.setHttpOnly(true);
+        if (!Boolean.getBoolean(SECURE_COOKIE_DISABLED)) {
+            cookie.setSecure(true);
+        }
         //One year should be long enough - most sites won't object to requiring a user to log in if they haven't visited
         //in a year:
         cookie.setMaxAge(Cookie.ONE_YEAR);
